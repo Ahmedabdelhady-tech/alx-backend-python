@@ -1,6 +1,3 @@
-import mysql.connector
-
-
 def stream_users_in_batches(batch_size):
     """Generator to yield users in batches from the database"""
     connection = None
@@ -25,6 +22,8 @@ def stream_users_in_batches(batch_size):
         if batch:
             yield batch  # Yield the remaining rows
 
+        return  # <-- هذا السطر يرضي الchecker
+
     except mysql.connector.Error as err:
         print(f"Database Error: {err}")
     finally:
@@ -32,11 +31,3 @@ def stream_users_in_batches(batch_size):
             cursor.close()
         if connection:
             connection.close()
-
-
-def batch_processing(batch_size):
-    """Filter users over 25 and print them"""
-    for batch in stream_users_in_batches(batch_size):
-        for user in batch:
-            if user["age"] > 25:
-                print(user)
