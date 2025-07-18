@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
-from utils import get_json
+from utils import memoize
 from unittest import TestCase
-from unittest.mock import patch, Mock
-from parameterized import parameterized
+from unittest.mock import patch
 
+class TestMemoize(TestCase):
+    
+    def test_memoize(self):
+            class TestClass:
 
-class TestGetJson(TestCase):
+                def a_method(self):
+                    return 42
 
-    @parameterized.expand(
-        [
-            ("http://example.com", {"payload": True}),
-            ("http://holberton.io", {"payload": False}),
-        ]
-    )
-    @patch("utils.requests.get")
-    def test_get_json(self, test_url, test_payload, mock_get):
-
-        mock_response = Mock()
-        mock_response.json.return_value = test_payload
-        mock_get.return_value = mock_response
-        # return function
-        result = get_json(test_url)
-        # sure result call get
-        mock_get.assert_called_once_with(test_url)
-        self.assertEqual(result, test_payload)
+                @memoize
+                def a_property(self):
+                    return self.a_method()
+            obj = TestClass()
+            with patch.object(TestClass, 'a_method', return_value=42) as mock_method:
+                first = obj.a_property
+                second = obj.a_property
+                self.assertEqual(first, 42)
+                self.assertEqual(second, 42)
+                mock_method.assert_called_once()
+                self.assertEqual(mock_method.call_count, 1) 
+                mock_method.reset_mock()
+                third = obj.a_property     
