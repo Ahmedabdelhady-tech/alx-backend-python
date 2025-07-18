@@ -21,6 +21,3 @@ class TestMemoize(TestCase):
                 self.assertEqual(first, 42)
                 self.assertEqual(second, 42)
                 mock_method.assert_called_once()
-                self.assertEqual(mock_method.call_count, 1) 
-                mock_method.reset_mock()
-                third = obj.a_property     
