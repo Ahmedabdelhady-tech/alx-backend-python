@@ -2,6 +2,8 @@
 """
 Test suite for client.GithubOrgClient:
 - org method
+- _public_repos_url property
+- public_repos method
 """
 
 import unittest
@@ -21,7 +23,7 @@ class TestGithubOrgClient(unittest.TestCase):
     )
     @patch("client.get_json")
     def test_org(self, org_name, mock_get_json):
-        """Ensure org() calls get_json with correct URL and returns its payload."""
+        """calls get_json with correct URL and returns its payload."""
 
         # Arrange: set mock return value
         mock_get_json.return_value = {"login": org_name}
@@ -39,7 +41,8 @@ class TestGithubOrgClient(unittest.TestCase):
 class TestGithubOrgClient(unittest.TestCase):
     def test_public_repos_url(self):
         """Test that _public_repos_url returns correct repos_url from org"""
-        with patch("client.GithubOrgClient.org", new_callable=PropertyMock) as mock_org:
+        with patch("client.GithubOrgClient.org",
+                   new_callable=PropertyMock) as mock_org:
             mock_org.return_value = {
                 "repos_url": "https://api.github.com/orgs/testorg/repos"
             }
