@@ -6,10 +6,13 @@ Test suite for client.GithubOrgClient:
 - public_repos method
 """
 
+from parameterized import parameterized_class
+from unittest.mock import patch, MagicMock
 import unittest
-from parameterized import parameterized
-from unittest.mock import patch, PropertyMock
+from parameterized import parameterized, parameterized_class
+from unittest.mock import patch, PropertyMock, MagicMock
 from client import GithubOrgClient
+from fixtures import TEST_PAYLOAD
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -41,8 +44,7 @@ class TestGithubOrgClient(unittest.TestCase):
 class TestGithubOrgClient(unittest.TestCase):
     def test_public_repos_url(self):
         """Test that _public_repos_url returns correct repos_url from org"""
-        with patch("client.GithubOrgClient.org",
-                   new_callable=PropertyMock) as mock_org:
+        with patch("client.GithubOrgClient.org", new_callable=PropertyMock) as mock_org:
             mock_org.return_value = {
                 "repos_url": "https://api.github.com/orgs/testorg/repos"
             }
@@ -90,3 +92,37 @@ class TestGithubOrgClient(unittest.TestCase):
         """Test has_license method"""
         result = GithubOrgClient.has_license(repo, license_key)
         self.assertEqual(result, expected)
+
+
+"""Integration test for the GithubOrgClient.public_repos method."""
+
+
+@parameterized_class(("org_payload",
+                      "repos_payload",
+                      "expected_repos",
+                      "apache2_repos"),
+                     TEST_PAYLOAD)
+class TestIntegrationGithubOrgClient(unittest.TestCase):
+    """Integration test class for GithubOrgClient."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Set up class fixtures before any tests are run."""
+        cls.get_patcher = patch("requests.get")
+        cls.mock_get = cls.get_patcher.start()
+
+        def side_effect(url):
+            """Side effect to return mock responses based on the URL."""
+            mock = Mock()
+            if url == GithubOrgClient.ORG_URL.format(org="google"):
+                mock.json.return_value = cls.org_payload
+            elif url == cls.org_payload["repos_url"]:
+                mock.json.return_value = cls.repos_payload
+            return mock
+
+        cls.mock_get.side_effect = side_effect
+
+    @classmethod
+    def tearDownClass(cls):
+        """Stop the patcher after all tests are run."""
+        cls.get_patcher.stop()
