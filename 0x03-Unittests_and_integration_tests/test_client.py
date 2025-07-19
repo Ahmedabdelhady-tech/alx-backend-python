@@ -6,7 +6,7 @@ Test suite for client.GithubOrgClient:
 
 import unittest
 from parameterized import parameterized
-from unittest.mock import patch
+from unittest.mock import patch, PropertyMock
 from client import GithubOrgClient
 
 
@@ -36,11 +36,6 @@ class TestGithubOrgClient(unittest.TestCase):
         self.assertEqual(result, {"login": org_name})
 
 
-from unittest.mock import patch, PropertyMock
-from client import GithubOrgClient
-import unittest
-
-
 class TestGithubOrgClient(unittest.TestCase):
     def test_public_repos_url(self):
         """Test that _public_repos_url returns correct repos_url from org"""
@@ -50,15 +45,11 @@ class TestGithubOrgClient(unittest.TestCase):
             }
             client = GithubOrgClient("testorg")
             self.assertEqual(
-                client._public_repos_url, "https://api.github.com/orgs/testorg/repos"
-            )
+                client._public_repos_url,
+                "https://api.github.com/orgs/testorg/repos")
 
 
 """Unit tests for GithubOrgClient class"""
-
-import unittest
-from unittest.mock import patch, PropertyMock
-from client import GithubOrgClient
 
 
 class TestGithubOrgClient(unittest.TestCase):
@@ -67,7 +58,8 @@ class TestGithubOrgClient(unittest.TestCase):
     @patch("client.get_json")
     def test_public_repos(self, mock_get_json):
         """Test public_repos returns expected list of repo names"""
-        mock_payload = [{"name": "repo1"}, {"name": "repo2"}, {"name": "repo3"}]
+        mock_payload = [{"name": "repo1"}, {
+            "name": "repo2"}, {"name": "repo3"}]
         mock_get_json.return_value = mock_payload
 
         with patch.object(
