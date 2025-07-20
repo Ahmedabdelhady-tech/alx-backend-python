@@ -10,7 +10,9 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
-    sender = UserSerializer(read_only=True)  # Nested sender representation
+    sender = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), pk_field=serializers.UUIDField()
+    )
 
     class Meta:
         model = Message
@@ -20,7 +22,7 @@ class MessageSerializer(serializers.ModelSerializer):
 
 class ConversationSerializer(serializers.ModelSerializer):
     participants = UserSerializer(many=True, read_only=True)
-    messages = MessageSerializer(many=True, read_only=True)  # Nested messages
+    messages = MessageSerializer(many=True, read_only=True)
 
     class Meta:
         model = Conversation
@@ -43,14 +45,21 @@ class ConversationCreateSerializer(serializers.ModelSerializer):
         conversation.participants.set(participants)
         return conversation
 
+    def get_messages(self, obj):
+        messages = obj.messages.all()
+        return MessageSerializer(messages, many=True).data
+
 
 class MessageCreateSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = Message
         fields = ["message_body", "conversation"]
         extra_kwargs = {"conversation": {"write_only": True}}
+        ordering = ["sent_at"]
 
     def create(self, validated_data):
         # Automatically set sender to current user
         validated_data["sender"] = self.context["request"].user
         return super().create(validated_data)
+
