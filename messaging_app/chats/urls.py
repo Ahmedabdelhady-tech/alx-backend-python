@@ -9,4 +9,3 @@ router.register(r"messages", MessageViewSet, basename="message")
 urlpatterns = [
     path("", include(router.urls)),
 ]
-# This file defines the URL routing for the chats application, allowing access to conversation and message endpoints.
