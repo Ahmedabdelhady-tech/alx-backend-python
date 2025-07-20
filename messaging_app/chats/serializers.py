@@ -5,19 +5,23 @@ from .models import User, Conversation, Message
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ["user_id", "first_name", "last_name", "email", "role", "created_at"]
-        extra_kwargs = {"password": {"write_only": True}}  # Hide password in responses
+        fields = [
+            "user_id",
+            "first_name",
+            "last_name",
+            "email",
+            "phone_number",
+            "role",
+            "created_at",
+        ]
 
 
 class MessageSerializer(serializers.ModelSerializer):
-    sender = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), pk_field=serializers.UUIDField()
-    )
+    sender = UserSerializer(read_only=True)
 
     class Meta:
         model = Message
         fields = ["message_id", "sender", "message_body", "sent_at"]
-        read_only_fields = ["message_id", "sent_at", "sender"]
 
 
 class ConversationSerializer(serializers.ModelSerializer):
@@ -26,40 +30,4 @@ class ConversationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Conversation
-        fields = ["conversation_id", "participants", "messages", "created_at"]
-        read_only_fields = ["conversation_id", "created_at"]
-
-
-class ConversationCreateSerializer(serializers.ModelSerializer):
-    participants = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=User.objects.all(), write_only=True
-    )
-
-    class Meta:
-        model = Conversation
-        fields = ["participants"]
-
-    def create(self, validated_data):
-        participants = validated_data.pop("participants")
-        conversation = Conversation.objects.create()
-        conversation.participants.set(participants)
-        return conversation
-
-    def get_messages(self, obj):
-        messages = obj.messages.all()
-        return MessageSerializer(messages, many=True).data
-
-
-class MessageCreateSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model = Message
-        fields = ["message_body", "conversation"]
-        extra_kwargs = {"conversation": {"write_only": True}}
-        ordering = ["sent_at"]
-
-    def create(self, validated_data):
-        # Automatically set sender to current user
-        validated_data["sender"] = self.context["request"].user
-        return super().create(validated_data)
-
+        fields = ["conversation_id", "participants", "created_at", "messages"]
