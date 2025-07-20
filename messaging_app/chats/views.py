@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import Conversation, Message, User
 from .serializers import ConversationSerializer, MessageSerializer
+from rest_framework import filters
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
