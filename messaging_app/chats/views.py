@@ -21,7 +21,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
         participants = User.objects.filter(user_id__in=participant_ids)
         conversation.participants.set(participants)
         conversation.save()
-
+    
         serializer = self.get_serializer(conversation)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
