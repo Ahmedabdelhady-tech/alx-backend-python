@@ -18,6 +18,8 @@ class User(AbstractUser):
         max_length=10, choices=UserRole.choices, default=UserRole.GUEST
     )
     create_by = models.DateField(auto_now_add=True)
+    password_hash = models.CharField(max_length=128)
+
 
     REQUIRED_FIELDS = ["email", "first_name", "last_name"]
     USERNAME_FIELD = "username"
