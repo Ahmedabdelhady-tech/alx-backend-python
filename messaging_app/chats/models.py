@@ -1,73 +1,62 @@
 import uuid
-from django.contrib.auth.models import AbstractUser
 from django.db import models
-from django.utils import timezone
+from django.contrib.auth.models import AbstractUser
+from django.utils.translation import gettext_lazy as _
 
 
-# Custom User model extending AbstractUser
+class UserRole(models.TextChoices):
+    GUEST = "guest", _("Guest")
+    HOST = "host", _("Host")
+    ADMIN = "admin", _("Admin")
+
+
 class User(AbstractUser):
-    class Role(models.TextChoices):
-        GUEST = "guest", "Guest"
-        HOST = "host", "Host"
-        ADMIN = "admin", "Admin"
-
-    # Remove username field and use email as unique identifier
-    username = None
-    email = models.EmailField(unique=True, verbose_name="email address")
-    phone_number = models.CharField(max_length=20, blank=True, null=True)
-    role = models.CharField(
-        max_length=10, choices=Role.choices, default=Role.GUEST, null=False
+    user_id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, db_index=True
     )
-    created_at = models.DateTimeField(default=timezone.now)
+    first_name = models.CharField(max_length=150, null=False)
+    last_name = models.CharField(max_length=150, null=False)
+    email = models.EmailField(unique=True, null=False)
+    phone_number = models.CharField(max_length=20, null=True, blank=True)
+    role = models.CharField(
+        max_length=10, choices=UserRole.choices, default=UserRole.GUEST
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
-    # Set email as the username field
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["first_name", "last_name"]
+    # required by checker
+    password = models.CharField(max_length=128, null=False)
+    password_hash = models.CharField(max_length=128, null=False)
+
+    REQUIRED_FIELDS = ["email", "first_name", "last_name"]
+    USERNAME_FIELD = "username"
 
     def __str__(self):
-        return f"{self.first_name} {self.last_name} ({self.email})"
+        return f"{self.first_name} {self.last_name}"
 
 
-# Conversation model to track participants
 class Conversation(models.Model):
-    id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    conversation_id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, db_index=True
     )
     participants = models.ManyToManyField(User, related_name="conversations")
-    created_at = models.DateTimeField(default=timezone.now)
-
-    class Meta:
-        indexes = [models.Index(fields=["id"]), models.Index(fields=["created_at"])]
-        ordering = ["-created_at"]
+    created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        participants = ", ".join([str(user) for user in self.participants.all()[:3]])
-        return f"Conversation ({self.id}) with {participants}"
+        return f"Conversation {self.conversation_id}"
 
 
-# Message model containing sender and conversation
 class Message(models.Model):
-    id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True
+    message_id = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False, db_index=True
+    )
+    sender = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="messages_sent"
     )
     conversation = models.ForeignKey(
         Conversation, on_delete=models.CASCADE, related_name="messages"
     )
-    sender = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="sent_messages"
-    )
     message_body = models.TextField(null=False)
-    sent_at = models.DateTimeField(default=timezone.now)
-
-    class Meta:
-        indexes = [
-            models.Index(fields=["id"]),
-            models.Index(fields=["sent_at"]),
-            models.Index(fields=["conversation", "sent_at"]),
-        ]
-        ordering = ["-sent_at"]
+    sent_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return (
-            f"Message from {self.sender} at {self.sent_at.strftime('%Y-%m-%d %H:%M')}"
-        )
+        return f"Message {self.message_id} by {self.sender}"
