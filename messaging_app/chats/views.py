@@ -1,4 +1,4 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, permissions, filters
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import Conversation, Message, User
@@ -8,6 +8,9 @@ from rest_framework.permissions import IsAuthenticated
 from .permissions import IsParticipantOfConversation
 from rest_framework import viewsets
 from rest_framework.status import HTTP_403_FORBIDDEN
+from .pagination import MessagePagination
+from .filters import MessageFilter
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
@@ -63,8 +66,12 @@ class MessageViewSet(viewsets.ModelViewSet):
 
 
 class MessageViewSet(viewsets.ModelViewSet):
+    queryset = Message.objects.all()
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated, IsParticipantOfConversation]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = MessageFilter
+    pagination_class = MessagePagination
 
     def get_queryset(self):
         return Message.objects.filter(conversation__participants=self.request.user)
@@ -79,3 +86,7 @@ class MessageViewSet(viewsets.ModelViewSet):
                 status=HTTP_403_FORBIDDEN,
             )
         serializer.save(sender=self.request.user)
+
+def get_queryset(self):
+    Conversation_id = self.kwargs.get("conversation_pk")
+    return Message.objects.filter(conversation__conversation_id=Conversation_id)

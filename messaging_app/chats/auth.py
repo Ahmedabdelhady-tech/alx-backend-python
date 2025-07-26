@@ -1,2 +1,10 @@
-from rest_framework_simplejwt.views import TokenObtainPairView
-from rest_framework_simplejwt.views import TokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+# chats/auth.py
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+
+@api_view(["GET"])
+def health_check(request):
+    return Response({"status": "ok"})
