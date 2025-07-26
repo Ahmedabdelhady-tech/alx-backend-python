@@ -6,6 +6,8 @@ from .serializers import ConversationSerializer, MessageSerializer
 from rest_framework import filters
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsParticipantOfConversation
+from rest_framework import viewsets
+from rest_framework.status import HTTP_403_FORBIDDEN
 
 
 class ConversationViewSet(viewsets.ModelViewSet):
@@ -60,8 +62,20 @@ class MessageViewSet(viewsets.ModelViewSet):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
-
 class MessageViewSet(viewsets.ModelViewSet):
-    queryset = Message.objects.all()
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated, IsParticipantOfConversation]
+
+    def get_queryset(self):
+        return Message.objects.filter(conversation__participants=self.request.user)
+
+    def perform_create(self, serializer):
+        conversation = serializer.validated_data["conversation"]
+        if self.request.user not in conversation.participants.all():
+            return Response(
+                {
+                    "detail": "You are not allowed to send a message to this conversation."
+                },
+                status=HTTP_403_FORBIDDEN,
+            )
+        serializer.save(sender=self.request.user)
