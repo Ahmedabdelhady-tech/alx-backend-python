@@ -17,9 +17,21 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path, include
+from messaging_app.chats import auth as auth_views
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include("chats.urls")),
     path("api-auth/", include("rest_framework.urls")),
+    path(
+        "api/token/", auth_views.TokenObtainPairView.as_view(), name="token_obtain_pair"
+    ),
+    path(
+        "api/token/refresh/",
+        auth_views.TokenRefreshView.as_view(),
+        name="token_refresh",
+    ),
+    # include your app endpoints
+    path("api/", include("messaging_app.chats.urls")),
 ]

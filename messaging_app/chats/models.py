@@ -23,7 +23,6 @@ class User(AbstractUser):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # required by checker
     password = models.CharField(max_length=128, null=False)
     password_hash = models.CharField(max_length=128, null=False)
 
