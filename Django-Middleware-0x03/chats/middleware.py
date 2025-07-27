@@ -1,3 +1,4 @@
+from django.conf import settings
 import logging
 from datetime import datetime
 from datetime import time
@@ -115,17 +116,31 @@ class RolePermissionMiddleware:
         # Check if the current path requires special permissions
         for protected_path, required_roles in self.PROTECTED_PATHS.items():
             if current_path.startswith(protected_path):
-                # Check if user is authenticated and has required role
+                # Check if user is authenticated
                 if not request.user.is_authenticated:
                     return HttpResponseForbidden("Authentication required")
 
-                # Check user's role (assuming role is stored in user.profile.role)
-                user_role = (
-                    getattr(request.user, "role", None)
-                    or getattr(request.user.profile, "role", None)
-                    if hasattr(request.user, "profile")
-                    else None
-                )
+                # Check user's role (compatible with different user model implementations)
+                user_role = None
+
+                # Try different ways to get the role
+                if hasattr(request.user, "role"):
+                    user_role = request.user.role
+                elif hasattr(request.user, "profile") and hasattr(
+                    request.user.profile, "role"
+                ):
+                    user_role = request.user.profile.role
+                elif hasattr(request.user, "groups"):
+                    # Fallback to Django groups
+                    user_role = (
+                        "admin"
+                        if request.user.groups.filter(name="admin").exists()
+                        else (
+                            "moderator"
+                            if request.user.groups.filter(name="moderator").exists()
+                            else None
+                        )
+                    )
 
                 if user_role not in required_roles:
                     return HttpResponseForbidden(
