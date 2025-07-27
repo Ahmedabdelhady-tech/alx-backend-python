@@ -30,5 +30,5 @@ urlpatterns = [
     # DRF Browsable API login
     path("api-auth/", include("rest_framework.urls")),
     # Your App endpoints
-    path("api/", include("chats.urls")),
+    path("api/", include("chats.urls"))
 ]
