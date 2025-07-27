@@ -97,3 +97,40 @@ class OffensiveLanguageMiddleware:
         else:
             ip = request.META.get("REMOTE_ADDR")
         return ip
+
+
+class RolePermissionMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+        # Define protected paths and required roles
+        self.PROTECTED_PATHS = {
+            "/chat/delete/": ["admin", "moderator"],
+            "/chat/ban/": ["admin"],
+            "/chat/config/": ["admin"],
+        }
+
+    def __call__(self, request):
+        current_path = request.path
+
+        # Check if the current path requires special permissions
+        for protected_path, required_roles in self.PROTECTED_PATHS.items():
+            if current_path.startswith(protected_path):
+                # Check if user is authenticated and has required role
+                if not request.user.is_authenticated:
+                    return HttpResponseForbidden("Authentication required")
+
+                # Check user's role (assuming role is stored in user.profile.role)
+                user_role = (
+                    getattr(request.user, "role", None)
+                    or getattr(request.user.profile, "role", None)
+                    if hasattr(request.user, "profile")
+                    else None
+                )
+
+                if user_role not in required_roles:
+                    return HttpResponseForbidden(
+                        f"Access denied. Requires {', '.join(required_roles)} role"
+                    )
+                break
+
+        return self.get_response(request)
