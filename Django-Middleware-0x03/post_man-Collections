@@ -1,0 +1,174 @@
+{
+    "info": {
+        "name": "Messaging App API",
+        "_postman_id": "abc12345-1234-5678-9012-defg56789hij",
+        "description": "Test JWT auth, conversations, and messages",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "1. Register User",
+            "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/register/",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "api",
+                        "register",
+                        ""
+                    ]
+                },
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"username\": \"user1\",\n    \"password\": \"TestPass123\",\n    \"email\": \"user1@example.com\",\n    \"first_name\": \"User\",\n    \"last_name\": \"One\"\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "2. Login User (JWT)",
+            "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/token/",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "api",
+                        "token",
+                        ""
+                    ]
+                },
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"username\": \"user1\",\n    \"password\": \"TestPass123\"\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "3. Create Conversation",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}",
+                        "type": "text"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/conversations/",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "api",
+                        "conversations",
+                        ""
+                    ]
+                },
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"participants\": [\"{{user1_id}}\", \"{{user2_id}}\"]\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "4. Send Message",
+            "request": {
+                "method": "POST",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}",
+                        "type": "text"
+                    },
+                    {
+                        "key": "Content-Type",
+                        "value": "application/json",
+                        "type": "text"
+                    }
+                ],
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/messages/",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "api",
+                        "messages",
+                        ""
+                    ]
+                },
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n    \"conversation_id\": \"{{conversation_id}}\",\n    \"sender_id\": \"{{user1_id}}\",\n    \"message_body\": \"Hello from user 1\"\n}",
+                    "options": {
+                        "raw": {
+                            "language": "json"
+                        }
+                    }
+                }
+            }
+        },
+        {
+            "name": "5. Get Conversations",
+            "request": {
+                "method": "GET",
+                "header": [
+                    {
+                        "key": "Authorization",
+                        "value": "Bearer {{token}}",
+                        "type": "text"
+                    }
+                ],
+                "url": {
+                    "raw": "http://127.0.0.1:8000/api/conversations/",
+                    "protocol": "http",
+                    "host": [
+                        "127.0.0.1"
+                    ],
+                    "port": "8000",
+                    "path": [
+                        "api",
+                        "conversations",
+                        ""
+                    ]
+                }
+            }
+        }
+    ]
+}
