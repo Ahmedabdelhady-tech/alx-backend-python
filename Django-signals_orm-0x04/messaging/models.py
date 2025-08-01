@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
 
 
 class Message(models.Model):
@@ -35,6 +38,13 @@ class MessageHistory(models.Model):
     )
     old_content = models.TextField()
     edited_at = models.DateTimeField(auto_now_add=True)
+    edited_by = models.ForeignKey(
+        User,
+        related_name="message_edited",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
 
     def __str__(self):
         return f" Old content for Message ID {self.message.id} at {self.edited_at} "
