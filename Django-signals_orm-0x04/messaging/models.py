@@ -34,7 +34,7 @@ class MessageHistory(models.Model):
         Message, related_name="history", on_delete=models.CASCADE
     )
     old_content = models.TextField()
-    edited_at = models.DateTimeField(auto_now_add=False)
+    edited_by = models.DateTimeField(auto_now_add=False)
 
     def __str__(self):
-        return f" Old content for Message ID {self.message.id} at {self.edited_at} "
+        return f" Old content for Message ID {self.message.id} at {self.edited_by} "
