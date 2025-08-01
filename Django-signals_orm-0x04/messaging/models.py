@@ -1,20 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
+from .managers import UnreadMessagesManager
 
 User = get_user_model()
-
-
-class UnreadMessagesManager(models.Manager):
-    def get_queryset(self):
-        return super().get_queryset().filter(read=False)
-
-    def for_user(self, user):
-        return (
-            self.get_queryset()
-            .filter(receiver=user, read=False)
-            .only("id", "sender", "content", "timestamp")
-        )
 
 
 class Message(models.Model):
@@ -31,6 +20,7 @@ class Message(models.Model):
         "self", null=True, blank=True, on_delete=models.CASCADE, related_name="replies"
     )
     read = models.BooleanField(default=False)
+    objects = models.Manager()
     unread = UnreadMessagesManager()
 
     def __str__(self):
