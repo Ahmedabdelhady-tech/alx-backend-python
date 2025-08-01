@@ -5,6 +5,7 @@ from django.shortcuts import redirect
 from django.views.decorators.http import require_POST
 from .models import Message
 from django.db.models import Prefetch
+from django.views.decorators.cache import cache_page
 
 
 user = get_user_model
@@ -43,3 +44,10 @@ def unread_message_view(request):
         request, "messaging/unread_messages.html", {"unread_messages": unread_messages}
     )
 
+
+@cache_page(60)
+def conversation_view(request, conversation_id):
+    messages = Message.objects.filter(conversation_id=conversation_id).select_related(
+        "sender", "receiver"
+    )
+    return render(request, "messaging/conversation.html", {"message": messages})
