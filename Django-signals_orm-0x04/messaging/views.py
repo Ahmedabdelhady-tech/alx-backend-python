@@ -35,6 +35,9 @@ def threaded_conversations(request):
 
 
 def unread_message_view(request):
-    unread_message = Message.unread.for_user(request.user)
-    for msg in unread_message:
-        print(msg.content)
+    unread_messages = Message.unread.unread_for_user(request.user).only(
+        "id", "sender", "content", "timestamp"
+    )
+    return render(
+        request, "messaging/unread_messages.html", {"unread_messages": unread_messages}
+    )
