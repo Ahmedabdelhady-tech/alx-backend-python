@@ -6,6 +6,7 @@ from django.views.decorators.http import require_POST
 from .models import Message
 from django.db.models import Prefetch
 
+
 user = get_user_model
 
 
@@ -41,3 +42,4 @@ def unread_message_view(request):
     return render(
         request, "messaging/unread_messages.html", {"unread_messages": unread_messages}
     )
+
