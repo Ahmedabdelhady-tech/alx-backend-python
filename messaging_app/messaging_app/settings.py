@@ -105,11 +105,11 @@ WSGI_APPLICATION = "messaging_app.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": env("DB_NAME"),
-        "USER": env("DB_USER"),
-        "PASSWORD": env("DB_PASSWORD"),
-        "HOST": env("DB_HOST"),
-        "PORT": env("DB_PORT"),
+        "NAME": env("MYSQLDB"),
+        "USER": env("MYSQLUSER"),
+        "PASSWORD": env("MYSQL_PASSWORD"),
+        "HOST": env("DB_HOST", "db"),
+        "PORT": env("DB_PORT", "3306"),
     }
 }
 
@@ -169,4 +169,3 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_LIFETIME_LATE_USER": timedelta(days=1),
     "SLIDING_TOKEN_LIFETIME_LATE_USER": timedelta(days=30),
 }
-
