@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: messaging-app-deployment
+  labels:
+    app: messaging-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: messaging-app
+  template:
+    metadata:
+      labels:
+        app: messaging-app
+    spec:
+      containers:
+        - name: messaging-app
+          image: your-dockerhub-username/messaging_app:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: DJANGO_SETTINGS_MODULE
+              value: "messaging_app.settings"
+            - name: DB_HOST
+              value: "db"
+            - name: DB_PORT
+              value: "3306"
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: messaging-secrets
+                  key: MYSQL_DATABASE
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: messaging-secrets
+                  key: MYSQL_USER
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: messaging-secrets
+                  key: MYSQL_PASSWORD
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: messaging-app-service
+spec:
+  selector:
+    app: messaging-app
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+  type: ClusterIP
