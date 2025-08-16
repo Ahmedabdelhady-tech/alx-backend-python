@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# kubctl-0x01
+# Script to scale Django app on Kubernetes and verify performance
+
+set -e  # stop execution on error
+
+DEPLOYMENT_NAME="messaging-app-deployment"
+SERVICE_NAME="messaging-app-service"
+NAMESPACE="default"
+
+echo "🚀 Scaling the Django app deployment to 3 replicas..."
+kubectl scale deployment $DEPLOYMENT_NAME --replicas=3 --namespace=$NAMESPACE
+
+echo "⏳ Waiting for pods to be ready..."
+kubectl rollout status deployment/$DEPLOYMENT_NAME --namespace=$NAMESPACE
+
+echo "📦 Listing pods..."
+kubectl get pods -l app=messaging-app -o wide --namespace=$NAMESPACE
+
+# Get service cluster IP and port
+SERVICE_IP=$(kubectl get svc $SERVICE_NAME --namespace=$NAMESPACE -o jsonpath='{.spec.clusterIP}')
+SERVICE_PORT=$(kubectl get svc $SERVICE_NAME --namespace=$NAMESPACE -o jsonpath='{.spec.ports[0].port}')
+
+echo "🌐 Service running at: http://$SERVICE_IP:$SERVICE_PORT"
+
+echo "⚡ Performing load testing with wrk (5s test)..."
+wrk -t2 -c10 -d5s http://$SERVICE_IP:$SERVICE_PORT/
+
+echo "📊 Monitoring resource usage..."
+kubectl top pods --namespace=$NAMESPACE
