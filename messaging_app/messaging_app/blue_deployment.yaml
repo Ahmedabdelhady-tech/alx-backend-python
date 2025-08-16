@@ -19,6 +19,6 @@ spec:
     spec:
       containers:
         - name: django
-          image: your-dockerhub-user/django-app:blue
+          image: ahmedabdelhadye94/messaging_app:blue
           ports:
             - containerPort: 8000
