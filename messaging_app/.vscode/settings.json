@@ -1,4 +1,32 @@
 {
   "python-envs.defaultEnvManager": "ms-python.python:venv",
-  "python-envs.pythonProjects": []
+  "python-envs.pythonProjects": [],
+  "sqltools.connections": [
+    {
+      "mysqlOptions": {
+        "authProtocol": "default",
+        "enableSsl": "Disabled"
+      },
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 3306,
+      "driver": "MySQL",
+      "username": "root",
+      "name": "django",
+      "database": "youtube"
+    },
+    {
+      "mysqlOptions": {
+        "authProtocol": "default",
+        "enableSsl": "Disabled"
+      },
+      "previewLimit": 50,
+      "server": "localhost",
+      "port": 3306,
+      "driver": "MySQL",
+      "name": "messaging_app",
+      "username": "root",
+      "database": "messaging_db"
+    }
+  ]
 }

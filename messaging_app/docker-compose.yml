@@ -1,26 +1,52 @@
+version: '3.8'  # Explicit version declaration
+
 services:
   web:
-    build: .
-    command: python3 manage.py runserver 0.0.0.0:8000
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
     volumes:
       - .:/app
+      - /app/static  # For production static files
     ports:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      - DB_HOST=db  # Explicit override
+      - PYTHONUNBUFFERED=1
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
 
   db:
     image: mysql:8.0
     restart: always
     environment:
-      MYSQLUSER: ${MYSQLUSER}
-      MYSQLDB: ${MYSQLDB}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "3307:3306"  # Alternative port to avoid host conflicts
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql  # For initial data
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    networks:
+      - app-network
 
 volumes:
   mysql_data:
+
+networks:
+  app-network:
+    driver: bridge

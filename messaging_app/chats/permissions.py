@@ -11,6 +11,8 @@ class IsParticipantOfConversation(permissions.BasePermission):
         if request.method in ["PUT", "PATCH", "DELETE"]:
 
             if request.user not in obj.participants.all():
-                raise PermissionDenied("You are not a participant in this conversation.")
+                raise PermissionDenied(
+                    "You are not a participant in this conversation."
+                )
                 return False
         return request.user in obj.participants.all()

@@ -53,11 +53,13 @@ class MessageViewSet(viewsets.ModelViewSet):
         conversation_pk = self.kwargs.get("conversation_pk")
         return Message.objects.filter(
             conversation__conversation_id=conversation_pk,
-            conversation__participants=self.request.user
+            conversation__participants=self.request.user,
         )
 
     def perform_create(self, serializer):
         conversation = serializer.validated_data["conversation"]
         if self.request.user not in conversation.participants.all():
-            raise PermissionDenied("You are not allowed to send a message to this conversation.")
+            raise PermissionDenied(
+                "You are not allowed to send a message to this conversation."
+            )
         serializer.save(sender=self.request.user)

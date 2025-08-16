@@ -17,11 +17,11 @@ import pymysql
 
 
 pymysql.install_as_MySQLdb()
+pymysql.version_info = (2, 1, 1, "final", 0)
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 
 # Quick-start development settings - unsuitable for production
@@ -30,6 +30,10 @@ environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 # SECURITY WARNING: keep the secret key used in production secret!
 
 env = environ.Env(DEBUG=(bool, False))
+if os.getenv("DOCKER"):
+    environ.Env.read_env(os.path.join(BASE_DIR, ".env.docker"))
+else:
+    environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
 
 
 # SECURITY WARNING: don't run with debug turned on in production!
@@ -102,17 +106,37 @@ WSGI_APPLICATION = "messaging_app.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": env("MYSQLDB"),
-        "USER": env("MYSQLUSER"),
+        "ENGINE": env("DB_ENGINE"),
+        "NAME": env("MYSQL_DATABASE"),
+        "USER": env("MYSQL_USER"),
         "PASSWORD": env("MYSQL_PASSWORD"),
-        "HOST": env("DB_HOST", "db"),
-        "PORT": env("DB_PORT", "3306"),
+        "HOST": env("DB_HOST", default="db" if os.getenv("DOCKER") else "localhost"),
+        "PORT": env("DB_PORT", default="3306"),
+        "OPTIONS": {
+            "charset": "utf8mb4",
+            "connect_timeout": env("DB_TIMEOUT", default=5, cast=int),
+            "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
+            "ssl": (
+                {"ca": env("DB_SSL_CA", default=None)}
+                if env("DB_SSL", default=False)
+                else {}
+            ),
+        },
+        "TEST": {
+            "CHARSET": "utf8mb4",
+            "COLLATION": "utf8mb4_unicode_ci",
+        },
     }
 }
 
+# Connection validation
+if DEBUG:
+    import logging
+
+    logging.getLogger("pymysql").setLevel(logging.DEBUG)
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
