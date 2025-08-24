@@ -1,0 +1,42 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/alx-backend-python/messaging_app.git',
+                    credentialsId: 'github-creds'
+            }
+        }
+
+        stage('Setup Python Env') {
+            steps {
+                
+                sh '''
+                python3 -m venv venv
+                . venv/bin/activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
+                '''
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                sh '''
+                . venv/bin/activate
+                pytest --junitxml=test-results.xml
+                '''
+            }
+        }
+
+        stage('Publish Test Report') {
+            steps {
+                junit 'test-results.xml'
+            }
+        }
+    }
+
+    triggers { }
+}
